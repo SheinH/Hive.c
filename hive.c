@@ -35,14 +35,6 @@ void drawHex(int y, int x){
 	mvaddch(y++,x+8,'/');
 	mvaddstr(y,x+1,"\\_____/");
 }	
-
-void drawTile(int y, int x, struct Tile t){
-	if(t.type){
-		drawHex(y,x);
-	}
-	mvaddstr(y+2,x+3,typeToCode(t.type);
-}
-
 const char * typeToCode(char type)
 {
 	switch(type) {
@@ -57,7 +49,7 @@ const char * typeToCode(char type)
 		case 5:
 			return "SDA";
 		case 6:
-			return "MOS"
+			return "MOS";
 		case 7:
 			return "LDB";
 		case 8:
@@ -67,12 +59,31 @@ const char * typeToCode(char type)
 	}
 }
 
+void drawTile(int y, int x, const struct Tile * t){
+	if(t->type){
+		drawHex(y,x);
+	}
+	mvaddstr(y+2,x+3,typeToCode(t->type));
+}
 
-void drawRow(int r){
+struct Tile * getTopTile(struct Location * loc){
+	int index = loc->numTiles - 1;
+	return &((*loc).tiles[index]);
+}
+
+
+void drawRow(int y, int x, int r){
 	for(int i = 0; i < 10; i++){
-		Tile& t = Location[r][i]
+		struct Tile * tile = getTopTile(&grid[r][i]);
+		drawTile(y,x,tile);
+		x+=HEXW;
+		if(i % 2)
+			y-=HEXH;
+		else
+			y+=HEXH;
 	}
 }
+
 
 int main(){
 	initscr();
@@ -80,8 +91,7 @@ int main(){
 	noecho();
 	keypad(stdscr, TRUE);
 	getmaxyx(stdscr, h, w );
-
-	
+	drawRow(0,0,0);
 	getch();
 	endwin();
 	return 0;
