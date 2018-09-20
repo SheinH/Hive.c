@@ -11,7 +11,7 @@
 #define MOSQUITO 6
 #define LADYBUG 7
 #define PILLBUG 8
-
+char output[1000];
 struct Tile {
 	int owner;
 	char type;
@@ -55,18 +55,21 @@ const char * typeToCode(char type)
 		case 8:
 			return "PLB";
 		default:
-			return "___";
+			return " _ ";
 	}
 }
 
 void drawTile(int y, int x, const struct Tile * t){
-	if(t->type){
+	if(t->type != 0){
 		drawHex(y,x);
 	}
 	mvaddstr(y+2,x+3,typeToCode(t->type));
 }
 
 struct Tile * getTopTile(struct Location * loc){
+	if(loc->numTiles == 0){
+		return &(loc->tiles[0]);
+	}
 	int index = loc->numTiles - 1;
 	return &((*loc).tiles[index]);
 }
@@ -75,14 +78,26 @@ struct Tile * getTopTile(struct Location * loc){
 void drawRow(int y, int x, int r){
 	for(int i = 0; i < 10; i++){
 		struct Tile * tile = getTopTile(&grid[r][i]);
-		drawTile(y,x,tile);
-		x+=HEXW;
 		if(i % 2)
-			y-=HEXH;
+			drawTile(y + HEXH,x,tile);
 		else
-			y+=HEXH;
+			drawTile(y,x,tile);
+		x+=HEXW;
 	}
 }
+
+void drawGrid(){
+	for(int i = 0; i < 6; i++)
+		drawRow(i * 4, 0, i);
+}
+
+void addTile(struct Location * loc, int owner, char type){
+	struct Tile * ct = &(loc->tiles[loc->numTiles]);
+	ct->owner = owner;
+	ct->type = type;
+	loc->numTiles++;
+}
+
 
 
 int main(){
@@ -91,7 +106,11 @@ int main(){
 	noecho();
 	keypad(stdscr, TRUE);
 	getmaxyx(stdscr, h, w );
-	drawRow(0,0,0);
+	for(int i = 1; i < 7; i++){
+		struct Location * loc = &grid[3][i+1];
+		addTile(loc,0,i);
+	}
+	drawGrid();
 	getch();
 	endwin();
 	return 0;
