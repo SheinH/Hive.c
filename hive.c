@@ -106,6 +106,7 @@ int main(){
 	noecho();
 	keypad(stdscr, TRUE);
 	getmaxyx(stdscr, h, w );
+	curs_set(0);
 	for(int i = 1; i < 7; i++){
 		struct Location * loc = &grid[3][i+1];
 		addTile(loc,0,i);
