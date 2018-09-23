@@ -22,6 +22,10 @@ struct Location {
 	int numTiles;
 };
 
+struct Coordinate {
+	int y, x;
+};
+
 int h, w;
 struct Location grid[10][10];
 
@@ -35,6 +39,28 @@ void drawHex(int y, int x){
 	mvaddch(y++,x+8,'/');
 	mvaddstr(y,x+1,"\\_____/");
 }	
+
+const struct Coordinate * getAdjacent(y, x)
+{
+	static struct Coordinate adj[6];
+	bool even = (x % 2) == 0;
+	adj[0] = (struct Coordinate){y - 1, x};
+	adj[3] = (struct Coordinate){y + 1, x};
+	if(even){
+		adj[1] = (struct Coordinate){y - 1, x + 1};
+		adj[2] = (struct Coordinate){y, x + 1};
+		adj[4] = (struct Coordinate){y, x - 1};
+		adj[5] = (struct Coordinate){y - 1, x - 1};
+	}
+	else{
+		adj[1] = (struct Coordinate){y, x + 1};
+		adj[2] = (struct Coordinate){y + 1, x + 1};
+		adj[4] = (struct Coordinate){y + 1, x - 1};
+		adj[5] = {y, x - 1};
+	}
+	return adj;
+}
+
 const char * typeToCode(char type)
 {
 	switch(type) {
@@ -66,6 +92,7 @@ void drawTile(int y, int x, const struct Tile * t){
 	mvaddstr(y+2,x+3,typeToCode(t->type));
 }
 
+
 struct Tile * getTopTile(struct Location * loc){
 	if(loc->numTiles == 0){
 		return &(loc->tiles[0]);
@@ -73,6 +100,7 @@ struct Tile * getTopTile(struct Location * loc){
 	int index = loc->numTiles - 1;
 	return &((*loc).tiles[index]);
 }
+
 
 
 void drawRow(int y, int x, int r){
@@ -107,11 +135,25 @@ int main(){
 	keypad(stdscr, TRUE);
 	getmaxyx(stdscr, h, w );
 	curs_set(0);
+	int x = 0, y = 0;
+	for(int row = 0; row < 4; row++){
+		for(int num = 0; num < 6; num++){
+			if(num % 2)
+				drawHex(y+HEXH,x);
+			else
+				drawHex(y,x);
+			x+=HEXW;
+		}
+		x = 0;
+		y+= 2 * HEXH;
+	}
+	/*
 	for(int i = 1; i < 7; i++){
 		struct Location * loc = &grid[3][i+1];
 		addTile(loc,0,i);
 	}
 	drawGrid();
+	*/
 	getch();
 	endwin();
 	return 0;
