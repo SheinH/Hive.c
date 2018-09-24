@@ -28,15 +28,27 @@ struct Coordinate {
 
 struct Player {
 	int remaining[9];
-}
+};
 
 int h, w;
 struct Location grid[10][10];
 struct Player players[2];
+int startCx;
+int startCy;
 
 struct Location * coordinateToLocation(struct Coordinate c){
 	return &(grid[c.y][c.x]);
 }
+
+void coordinateToScreenLocation(struct Coordinate c, int * ySC, int * xSC){
+	int xOff = c.x - startCx;
+	int yOff = c.y - startCy;
+	*xSC = xOff * HEXW;
+	*ySC = yOff * HEXH * 2;
+	if(c.x % 2 == 1)
+		*ySC += HEXH;
+}
+
 
 void drawHex(int y, int x){
 	mvaddstr(y++,x+2,"_____");
@@ -47,7 +59,7 @@ void drawHex(int y, int x){
 	mvaddch(y,x,'\\');
 	mvaddch(y++,x+8,'/');
 	mvaddstr(y,x+1,"\\_____/");
-}	
+}
 
 const struct Coordinate * getAdjacent(y, x)
 {
@@ -94,15 +106,8 @@ const char * typeToCode(char type)
 	}
 }
 
-void drawTile(int y, int x, const struct Tile * t){
-	if(t->type != 0){
-		drawHex(y,x);
-	}
-	mvaddstr(y+2,x+3,typeToCode(t->type));
-}
-
-
-struct Tile * getTopTile(struct Location * loc){
+struct Tile * getTopTile(struct Coordinate c){
+	struct Location * loc = &grid[c.y][c.x];
 	if(loc->numTiles == 0){
 		return &(loc->tiles[0]);
 	}
@@ -110,14 +115,21 @@ struct Tile * getTopTile(struct Location * loc){
 	return &((*loc).tiles[index]);
 }
 
+void drawTile(struct Coordinate c){
+	struct Location * loc = coordinateToLocation(c);
+	int ySC, xSC;
+	coordinateToScreenLocation(c,&ySC,&xSC);
+	struct Tile * t = getTopTile(c);
+	if(loc->numTiles > 0){
+		drawHex(ySC, xSC);
+	}
+	mvaddstr(ySC+2,xSC+3,typeToCode(t->type));
+}
+
+
 void drawRow(int y, int x, int r){
 	for(int i = 0; i < 10; i++){
-		struct Tile * tile = getTopTile(&grid[r][i]);
-		if(i % 2)
-			drawTile(y + HEXH,x,tile);
-		else
-			drawTile(y,x,tile);
-		x+=HEXW;
+		drawTile((struct Coordinate){r,i});
 	}
 }
 
@@ -143,7 +155,7 @@ void initPlayers(){
 	arr[MOSQUITO] = 1;
 	arr[LADYBUG] = 1;
 	arr[PILLBUG] = 1;
-	players[2] = players[1];
+	players[1] = players[0];
 }
 
 void drawRemaining(int player){
@@ -157,25 +169,11 @@ int main(){
 	keypad(stdscr, TRUE);
 	getmaxyx(stdscr, h, w );
 	curs_set(0);
-	int x = 0, y = 0;
-	for(int row = 0; row < 4; row++){
-		for(int num = 0; num < 6; num++){
-			if(num % 2)
-				drawHex(y+HEXH,x);
-			else
-				drawHex(y,x);
-			x+=HEXW;
-		}
-		x = 0;
-		y+= 2 * HEXH;
-	}
-	/*
 	for(int i = 1; i < 7; i++){
 		struct Location * loc = &grid[3][i+1];
 		addTile(loc,0,i);
 	}
 	drawGrid();
-	*/
 	getch();
 	endwin();
 	return 0;
