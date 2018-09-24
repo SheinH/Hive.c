@@ -11,7 +11,7 @@
 #define MOSQUITO 6
 #define LADYBUG 7
 #define PILLBUG 8
-char output[1000];
+
 struct Tile {
 	int owner;
 	char type;
@@ -26,8 +26,17 @@ struct Coordinate {
 	int y, x;
 };
 
+struct Player {
+	int remaining[9];
+}
+
 int h, w;
 struct Location grid[10][10];
+struct Player players[2];
+
+struct Location * coordinateToLocation(struct Coordinate c){
+	return &(grid[c.y][c.x]);
+}
 
 void drawHex(int y, int x){
 	mvaddstr(y++,x+2,"_____");
@@ -56,7 +65,7 @@ const struct Coordinate * getAdjacent(y, x)
 		adj[1] = (struct Coordinate){y, x + 1};
 		adj[2] = (struct Coordinate){y + 1, x + 1};
 		adj[4] = (struct Coordinate){y + 1, x - 1};
-		adj[5] = {y, x - 1};
+		adj[5] = (struct Coordinate){y, x - 1};
 	}
 	return adj;
 }
@@ -101,8 +110,6 @@ struct Tile * getTopTile(struct Location * loc){
 	return &((*loc).tiles[index]);
 }
 
-
-
 void drawRow(int y, int x, int r){
 	for(int i = 0; i < 10; i++){
 		struct Tile * tile = getTopTile(&grid[r][i]);
@@ -126,7 +133,22 @@ void addTile(struct Location * loc, int owner, char type){
 	loc->numTiles++;
 }
 
+void initPlayers(){
+	int * arr = players[1].remaining;
+	arr[QUEEN] = 1;
+	arr[SPIDER] = 2;
+	arr[BEETLE] = 2;
+	arr[GRASSHOPPER] = 3;
+	arr[SOLDIER_ANT] = 4;
+	arr[MOSQUITO] = 1;
+	arr[LADYBUG] = 1;
+	arr[PILLBUG] = 1;
+	players[2] = players[1];
+}
 
+void drawRemaining(int player){
+	
+}
 
 int main(){
 	initscr();
